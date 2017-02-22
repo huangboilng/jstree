@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<meta charset="utf-8">
+    <link href="css/bootstrap3.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="css/jstree.min.css" />
+
+<style>
+#jstree-body-page{ background-color:#fff; width:100%; padding-bottom:20px;padding-top:20px;}
+#treeview, #treeview-form-edit{ border:1px solid #ccc; border-radius:4px; padding:10px;}
+#jstree-left-list{ position:relative;}
+#jstree-left-list-edit-btn{ position:absolute;right: 20px; top: -14px;}
+</style>
+  </head>
+  <body>
+  	<div class="container" id="jstree-body-page">
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="col-sm-3" id="jstree-left-list">
+		  	<button type="button" class="btn btn-default" data-toggle="modal" id="jstree-left-list-edit-btn">修改科室</button>
+		  	<div id="treeview"></div>
+		  </div>
+		  <div class="col-sm-9">
+		  		<form class="form-horizontal" id="treeview-form-add">
+				  <div class="form-group">
+					<label class="col-sm-5 control-label">新增科室</label>
+				  </div>
+				  <div class="form-group">
+					<label for="dname" class="col-sm-2 control-label">科室名称</label>
+					<div class="col-sm-10">
+					  <input type="text" class="form-control" placeholder="科室名称" name="dname">
+					</div>
+				  </div>
+				  <div class="form-group">
+					<label for="dintroduction" class="col-sm-2 control-label">科室描述</label>
+					<div class="col-sm-10">
+					  <input type="text" class="form-control" placeholder="科室描述" name="dintroduction">
+					</div>
+				  </div>
+				  <div class="form-group">
+					<label for="parent-text" class="col-sm-2 control-label">所属的父级科室</label>
+					<div class="col-sm-10">
+					<!--  <input type="text" class="form-control" placeholder="所属的父级科室" id="parent-text" readonly>
+					  <input type="hidden" class="form-control"  name="pid" id="parent-text-name" value="0">-->
+					  <select name="pid" class="parent-pid"></select>
+					</div>
+				  </div>
+				  <div class="form-group">
+				    <label class="col-sm-2 control-label">是否启用</label>
+					<div class="col-sm-10">
+					  <input type="checkbox" name="status" value="1" checked="checked">
+					</div>
+					</div>
+				  <div class="form-group">
+					<div class="col-sm-offset-2 col-sm-10">
+					  <button type="submit" class="btn btn-default">提交</button>
+					</div>
+				  </div>
+				</form>
+		  </div>
+        </div>
+      </div>
+    </div>
+	
+	
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">修改科室</h4>
+      </div>
+      <div class="modal-body">
+          <form class="form-horizontal" id="treeview-form-edit" method="post" action="__GROUP__/department/depart_modifyhandle">
+			  <div class="form-group">
+				<label class="col-sm-2 control-label">科室名称</label>
+				<div class="col-sm-10">
+				  <input type="text" class="form-control" placeholder="科室名称" name="dname" id="treeview-form-edit-dname">
+				</div>
+			  </div>
+			  <div class="form-group">
+				<label class="col-sm-2 control-label">科室描述</label>
+				<div class="col-sm-10">
+				  <input type="text" class="form-control" placeholder="科室描述" name="dintroduction" id="treeview-form-edit-dintroduction">
+				</div>
+			  </div>
+			  <div class="form-group">
+				<label class="col-sm-2 control-label">所属的父级科室</label>
+				<div class="col-sm-10">
+				  <select name="pid" class="parent-pid"></select>
+				</div>
+				<input type="hidden" class="form-control"  name="id" id="edit-id">
+			  </div>
+			  <div class="form-group">
+				<label class="col-sm-2 control-label">是否启用</label>
+				<div class="col-sm-10">
+				  <input type="checkbox" name="status" value="1" checked="checked" id="treeview-form-edit-status">
+				</div>
+				</div>
+			  <div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+				  <button type="submit" class="btn btn-default">修改</button>
+				</div>
+			  </div>
+		  </form>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+    <script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/jstree.min.js"></script>
+	
+  	<script type="text/javascript">
+	
+$(function(){
+
+	function getRootPath(){
+	    //获取当前网址，如： http://localhost:8083/uimcardprj/share/meun.jsp
+	    var curWwwPath=window.document.location.href;
+	    //获取主机地址之后的目录，如： uimcardprj/share/meun.jsp
+	    var pathName=window.document.location.pathname;
+	    var pos=curWwwPath.indexOf(pathName);
+	    //获取主机地址，如： http://localhost:8083
+	    var localhostPaht=curWwwPath.substring(0,pos);
+	    //获取带"/"的项目名，如：/uimcardprj
+	    var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1);
+	    return(localhostPaht+projectName);
+	}
+	
+	
+	rootPath=getRootPath();
+	function getjsontree(){
+		var parentpid = [];
+		//$.getJSON(rootPath+"/hos/department/ajax_index", function(json){
+		//http://117.41.185.181:88/index.php/hos/department/ajax_index
+		var json = [{"id":"394","dname":"\u8425\u517b\u79d1","pid":"0"},{"id":"359","dname":"\u773c\u79d1","pid":"0","children":[{"id":"666","dname":"\u773c\u79d1","pid":"6"},{"id":"666","dname":"\u773c\u79d1","pid":"6","state":{"opened":true,"selected" : true }}]},{"id":"360","dname":"\u5987\u79d1","pid":"0"},{"id":"361","dname":"\u4ea7\u79d1","pid":"0"},{"id":"362","dname":"\u5fc3\u8840\u7ba1\u79d1","pid":"0"},{"id":"363","dname":"\u8840\u6db2\u5185\u79d1","pid":"0"},{"id":"364","dname":"\u80bf\u7624\u79d1","pid":"0"},{"id":"365","dname":"\u80be\u810f\u5185\u79d1","pid":"0"},{"id":"366","dname":"\u547c\u5438\u5185\u79d1","pid":"0"},{"id":"367","dname":"\u795e\u7ecf\u5185\u79d1","pid":"0"},{"id":"368","dname":"\u5185\u5206\u6ccc\u4ee3\u8c22\u79d1","pid":"0"},{"id":"369","dname":"\u6d88\u5316\u5185\u79d1","pid":"0"},{"id":"370","dname":"\u76ae\u80a4\u79d1","pid":"0"},{"id":"371","dname":"\u513f\u5185\u79d1","pid":"0"},{"id":"372","dname":"\u4e2d\u533b\u79d1","pid":"0"},{"id":"373","dname":"\u7efc\u5408ICU","pid":"0"},{"id":"374","dname":"\u7279\u9700\u75c5\u623f","pid":"0"},{"id":"375","dname":"\u75bc\u75db\u79d1","pid":"0"},{"id":"376","dname":"\u79fb\u690d\u79d1","pid":"0"},{"id":"377","dname":"\u809d\u75c5\u79d1","pid":"0"},{"id":"378","dname":"\u98ce\u6e7f\u514d\u75ab\u79d1","pid":"0"},{"id":"379","dname":"\u6025\u8bca\u79d1","pid":"0"},{"id":"380","dname":"\u6025\u8bcaICU","pid":"0"},{"id":"381","dname":"\u95e8\u8bca\u6cbb\u7597\u5ba4","pid":"0"},{"id":"382","dname":"\u95e8\u8bca\u624b\u672f\u5ba4","pid":"0"},{"id":"383","dname":"\u95e8\u8bca\u6362\u836f\u5ba4","pid":"0"},{"id":"384","dname":"\u611f\u67d3\u6027\u75be\u75c5\u79d1","pid":"0"},{"id":"385","dname":"\u533b\u7597\u7f8e\u5bb9\u79d1","pid":"0"},{"id":"386","dname":"\u5fc3\u8eab\u533b\u5b66\u79d1","pid":"0"},{"id":"387","dname":"PICC\u95e8\u8bca","pid":"0"},{"id":"388","dname":"\u9ebb\u9189\u79d1","pid":"0"},{"id":"389","dname":"\u4e34\u5e8a\u836f\u5b66\u5ba4","pid":"0"},{"id":"390","dname":"\u6838\u533b\u5b66\u79d1","pid":"0"},{"id":"391","dname":"\u5185\u8154\u955c\u5ba4","pid":"0"},{"id":"392","dname":"\u8f93\u8840\u79d1","pid":"0"},{"id":"393","dname":"\u5eb7\u590d\u533b\u5b66\u79d1","pid":"0"},{"id":"347","dname":"\u795e\u7ecf\u5916\u79d1","pid":"0"},{"id":"348","dname":"\u6ccc\u5c3f\u5916\u79d1","pid":"0"},{"id":"349","dname":"\u9aa8\u79d1","pid":"0"},{"id":"350","dname":"\u8033\u9f3b\u54bd\u5589\u79d1","pid":"0"},{"id":"351","dname":"\u53e3\u8154\u79d1","pid":"0"},{"id":"352","dname":"\u5fc3\u80f8\u5916\u79d1","pid":"0"},{"id":"353","dname":"\u809d\u80c6\u5916\u79d1","pid":"0"},{"id":"354","dname":"\u80c3\u80a0\u5916\u79d1","pid":"0"},{"id":"355","dname":"\u8840\u7ba1\u5916\u79d1","pid":"0"},{"id":"356","dname":"\u4e73\u817a\u5916\u79d1","pid":"0"},{"id":"357","dname":"\u7532\u72b6\u817a\u5916\u79d1","pid":"0"},{"id":"358","dname":"\u513f\u7ae5\u773c\u79d1","pid":"0"}];
+		
+				if (!json) { return; }	
+				var jsonchang = json; 
+				function changjson(jsonchang){
+					$.each(jsonchang, function (id, node) {
+						node.text=node.dname;
+						if(node.children != null){	
+							changjson(node.children);	
+						}
+						parentpid.push(node);
+				   }); 
+			   }
+			   changjson(jsonchang);
+			   console.log(jsonchang);
+			   $('#treeview').on('changed.jstree', function (e, data) {
+					var i, j;
+					r = [], hiddenval = [], tree = [];
+					for(i = 0, j = data.selected.length; i < j; i++) {
+						r.push(data.instance.get_node(data.selected[i]).text);
+						hiddenval.push(data.instance.get_node(data.selected[i]).id);
+						tree.push(data.instance.get_node(data.selected[i]));
+					}
+					//$("#parent-text").val(r);
+					$("#edit-id").val(hiddenval);
+			   }).jstree({
+					'core' : {
+						'data' : jsonchang
+					}
+			   });	
+			   
+			   
+			getselectparent(parentpid);	
+						   
+		//});
+		
+	}
+	getjsontree();
+	   
+	function getselectparent(parentpid){
+		if (!parentpid || parentpid == ""){return;}
+		var parentpidhtml = "<option value=0>顶级科室</option>";
+		$.each(parentpid, function (id, node) {
+			parentpidhtml=parentpidhtml+"<option value="+ node.id +">"+ node.dname +"</option>"; 						
+	   }); 
+	   $(".parent-pid").append(parentpidhtml);
+	}
+	
+	$("#jstree-left-list-edit-btn").click(function(){
+	
+		if (!r || r == "") { alert("请选择需要修改的科室"); return; }	
+
+		$.ajax({
+		   type: "GET",
+		   url: rootPath+"/hos/department/ajax_modify",
+		   data: "id="+hiddenval,
+		   success: function(json){
+		     var dataObj=eval("("+json+")");
+			 $("#treeview-form-edit-dname").val(dataObj.dname);
+			 $("#treeview-form-edit-dintroduction").val(dataObj.dintroduction);
+			 if(dataObj.status == 1){
+			    $("#treeview-form-edit-status").attr("checked",true)
+			 }else{
+			 	$("#treeview-form-edit-status").attr("checked",false)
+			 }
+		   }
+		});
+
+		$('#myModal').modal();
+			
+	});	
+	
+});		
+
+  	</script>
+  </body>
